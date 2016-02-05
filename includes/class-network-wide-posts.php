@@ -155,11 +155,15 @@ class Network_Wide_Posts {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		
 		//custom hooks
-		$this->loader->add_action( 'admin_menu', 				$plugin_admin, 	'add_menu' );
+		$this->loader->add_action( 'admin_menu', 				$plugin_admin, 	'add_menu' ); //settings page
+		$this->loader->add_action( 'admin_menu', 				$plugin_admin, 'add_post_sub_menu'); //post sub-menu
+		$this->loader->add_action( 'custom_menu_order',	$plugin_admin, 'order_post_sub_menu'); //order post sub-menu
 
 		$this->loader->add_action( 'admin_init', 				$plugin_admin, 	'register_settings' );
 		
 		$this->loader->add_action( 'wpmu_new_blog',     $plugin_admin,'add_new_blog');
+		
+		$this->loader->add_action( 'wp_ajax_network_wide_post_ordering',$plugin_admin,'network_wide_post_ordering'); //ajax save manual order
 
 	}
 

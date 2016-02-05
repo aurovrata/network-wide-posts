@@ -125,7 +125,7 @@ class Network_Wide_Posts_Terms {
 		$this->term_type = self::AUTOMATIC_TAG;
 		$this->term_name = __("Network-wide","network-wide-posts");
 		$this->term_slug = "network-wide";
-		
+		//load the child blog terms if they exists
 		$this->blog_terms = get_option($this->plugin_name."-blog-term-id", array());
 	}
 	
@@ -313,7 +313,7 @@ class Network_Wide_Posts_Terms {
 		global $wpdb;
 		$table_prefix = $wpdb->prefix;
 		if($blog_id>1) $table_prefix = $wpdb->prefix . $blog_id . "_";
-		return "SELECT concat('".$blog_id."',ID) AS post_id, post_title, post_name, post_date, post_content, ".$table_prefix."postmeta.meta_value as thumb_id, '".$blog_id."' AS blog_id 
+		return "SELECT concat('".$blog_id."',ID) AS net_wide_id, post_title, post_name, post_date, post_content, ".$table_prefix."postmeta.meta_value as thumb_id, '".$blog_id."' AS blog_id 
 						FROM ".$table_prefix."posts, ".$table_prefix."term_relationships, ".$table_prefix."postmeta
 							WHERE ".$table_prefix."posts.post_status LIKE 'publish'
 								AND ".$table_prefix."posts.ID = ".$table_prefix."term_relationships.object_id
@@ -332,11 +332,65 @@ class Network_Wide_Posts_Terms {
 		global $wpdb;
 		$table_prefix = $wpdb->prefix;
 		if($blog_id>1) $table_prefix = $wpdb->prefix . $blog_id . "_";
-		return
-		"SELECT ".$table_prefix."posts.ID AS post_id,'".$blog_id."' AS blog_id, ".$table_prefix."posts.guid AS thumb_url 
+		return "SELECT ".$table_prefix."posts.ID AS post_id,'".$blog_id."' AS blog_id, ".$table_prefix."posts.guid AS thumb_url 
 			FROM ".$table_prefix."posts, ". $wpdb->prefix . self::VIEW_POSTS_NAME . "
 				WHERE ".$table_prefix."posts.ID = ". $wpdb->prefix . self::VIEW_POSTS_NAME . ".thumb_id
 					AND ". $wpdb->prefix . self::VIEW_POSTS_NAME . ".blog_id= %d ";
+	}
+	
+	public function get_network_wide_posts(){
+		global $wpdb;
+		$sql_query = "SELECT posts.net_wide_id, posts.post_title, posts.post_name, posts.blog_id, posts.post_content, thumbs.thumb_url 
+       FROM ". $wpdb->prefix . self::VIEW_POSTS_NAME . " as posts, " . $wpdb->prefix . self::VIEW_POSTS_NAME . "_thumbs as thumbs 
+        WHERE posts.thumb_id = thumbs.post_id
+         AND posts.blog_id = thumbs.blog_id";
+		$posts = $wpdb->get_results($sql_query);
+		return $posts;
+	}
+	
+	public function save_posts_order(){
+		//wp_verify_nonce( $nonce, $action );
+		
+		if( !isset($_POST['security']) || !wp_verify_nonce($_POST['security'], 'nwp_ordering_nonce') )
+		return;
+	    
+	    global $wpdb;
+	    $order = explode(",",$_POST['order']);
+	    $category = $_POST['category'];
+	    
+	    $table_name = $wpdb->prefix . $this->deefuse_ReOrder_tableName;
+	    $total = $wpdb->get_var( $wpdb->prepare("select count(*) as total from `$table_name` where category_id = %d", $category) );
+	    
+	    // if category has not been sorted as yet
+	    if($total == 0)
+	    {
+		foreach($order as $post_id) {
+		    $value[] = "($category, $post_id)";
+		}
+		$sql = sprintf("insert into $table_name (category_id,post_id) values %s", implode(",",$value));
+	        $wpdb->query($sql);
+	    }
+	    else
+	    {
+		$results = $wpdb->get_results($wpdb->prepare("select * from `$table_name` where category_id = %d order by id", $category));
+		foreach($results as $index => $result_row) {
+		    $result_arr[$result_row->post_id] = $result_row;
+		}
+		$start = 0;
+		foreach($order as $post_id) {
+		    $inc_row = $result_arr[$post_id];
+		    $incl = 1; //$inc_row->incl; @toto
+		    $row = $results[$start];
+		    ++$start;
+		    $id = $row->id;
+		    $sql = $wpdb->prepare("update $table_name set post_id = %d,incl = %d where id = %d",$post_id, $incl, $id);
+		    $wpdb->query($sql);
+		}
+	    }
+	    
+	    
+	    
+	    die();
 	}
 }
 ?>

@@ -41,11 +41,22 @@ class Network_Wide_Posts_Admin {
 	private $version;
 	
 	/**
+	 * The isntance of Network_Wide_Posts_Terms for creating network-wide terms.
 	 *
-	 *
+	 * @since    1.0.0
+	 * @access   private
+	 * @var      object    $network_terms    The isntance of Network_Wide_Posts_Terms class.
 	 */
 	private $network_terms;
-
+	
+	/**
+	 * Constant to determine the location.
+	 *
+	 * @since 1.0.0
+	 * @access static
+	 * @var int The order where the post sub-menu sits.  (-ve to order from end).
+	 */
+	const POST_MENU_ORDER = -1;
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -90,21 +101,15 @@ class Network_Wide_Posts_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_scripts() {
-
-		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Network_Wide_Posts_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Network_Wide_Posts_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
-		 */
-
+	public function enqueue_scripts($hook_sufix) {
+		//$screen = get_current_screen();
+		
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/network-wide-posts-admin.js', array( 'jquery' ), $this->version, false );
+		error_log("NWP: Addind sortable ... ".$hook_sufix."=".$this->plugin_name . '-order');
+		if('posts_page_'.$this->plugin_name . '-order' == $hook_sufix){
+			wp_enqueue_script( 'jquery-ui-sortable');
+			error_log("NWP: Addind sortable jquery");
+		}
 
 	}
 	
@@ -414,5 +419,77 @@ class Network_Wide_Posts_Admin {
 		<?php
 
 	} // network_wide_term_slug_field()
+	
+	/**
+	 * Hook referenced function to add a sub-menu to the Posts section
+	 *
+	 * @since 		1.0.0
+	 */
+	public function add_post_sub_menu(){
+		$blog_id = get_current_blog_id();
+		if(1!=$blog_id) return;
+		
+		//add_posts_page( $page_title, $menu_title, $capability, $menu_slug, $function) simple wrapper for add_submenu_page to post menu
+		add_posts_page('Order Network-wide Posts', 'Network Posts', 'manage_categories', $this->plugin_name . '-order', array($this,'show_network_wide_posts'));
+	}
+	
+	/**
+	 * Hook referenced function to change the order of the sub menu added in add_post_sub_menu()
+	 *
+	 * @since 		1.0.0
+	 * @param 		array 		$menu_ord 		Empty array, only used when changing section menu order, Dashboard, Posts, Media and so on
+	 * @return 		array 									In this case it is empty as we are changing the sub menu using the global $submenu.
+	 */
+	public function order_post_sub_menu($menu_ord ) {
+    global $submenu;
 
+    // Enable the next line to inspect the $submenu values
+    //error_log( "NWP: global menu \n". print_r($submenu,true));
+		//
+
+    $arr = array();
+		$menu_order = array();
+    //$arr[] = $submenu['edit.php'][5]; //All Posts
+		foreach($submenu['edit.php'] as $order => $menu){
+			$menu_order[] = $order;
+			if(isset($menu[2]) && $this->plugin_name . '-order' == $menu[2]) $nwp_key = $order;
+		}
+		//error_log( "NWP: current order \n". print_r($menu_order,true));
+		//the index of our menu
+    $idx = array_search($nwp_key,$menu_order);
+		//remove our menu form the current order
+		array_splice($menu_order, $idx,1);
+		//error_log( "NWP: new order \n". print_r($menu_order,true));
+		//insert our menu in the order we want.
+		if(self::POST_MENU_ORDER>0) array_splice($menu_order,self::POST_MENU_ORDER-1, 0, $nwp_key);
+		else array_splice($menu_order,sizeof($menu_order) - self::POST_MENU_ORDER+1, 0, $nwp_key);
+		//error_log( "NWP: new order \n". print_r($menu_order,true));
+		//let's re-order the menus
+		foreach($menu_order as $order ){
+			$arr[] = $submenu['edit.php'][$order];
+		}
+    $submenu['edit.php'] = $arr;
+
+    return $menu_ord;
+	}
+	/**
+	 * Hook referenced function to display network-wide posts page in the Posts section sub menu
+	 *
+	 * @since 		1.0.0
+	 */
+	public function show_network_wide_posts(){
+		$posts = $this->network_terms->get_network_wide_posts();
+		include( plugin_dir_path( __FILE__ ) . 'partials/network-wide-posts-admin-display.php');
+	}
+	
+	/**
+	 * Hook referenced function to capture Ajax calls from the network-wide post page
+	 *
+	 * @since 		1.0.0
+	 * @param 		array 		$menu_ord 		Empty array, only used when changing section menu order, Dashboard, Posts, Media and so on
+	 * @return 		array 									In this case it is empty as we are changing the sub menu using the global $submenu.
+	 */
+	public function network_wide_post_ordering(){
+		$this->network_terms->save_posts_order();
+	}
 }
