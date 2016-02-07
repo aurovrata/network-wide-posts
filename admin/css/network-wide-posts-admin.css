@@ -17,11 +17,16 @@ ul.headers {
 ul#sortable-list li {
     height: 30px;
     font-size: 14px;
+    border: 1px solid #C2C2C2;
+    padding: 5px 0px 0px 5px;
 }
+ul#sortable-list li:hover {cursor: all-scroll;}
 ul#sortable-list {
     border-bottom: 1px solid #C9C9C9;
     margin-top: 0px;
 }
-ul.sorting-disabled li {
+ul#sortable-list.sorting-disabled li {
     color: grey;
+    border: none;
 }
+ul#sortable-list.sorting-disabled li {cursor: auto;}

@@ -28,8 +28,9 @@
 	 * Although scripts in the WordPress core, Plugins and Themes may be
 	 * practising this, we should strive to set a better example in our own work.
 	 */
-
-	 
+	var data='';
+	var sortable = false;
+	
 	$(document).ready(function() {
 		if($("#form_result input.option_order:checked").val() ==  "manual" && $("#sortable-list li").length >1) enableSortable();
 		
@@ -40,16 +41,16 @@
 			if($("#form_result input.option_order:checked").val() ==  "manual" && $("#sortable-list li").length >1){
 				enableSortable();
 			}else{
-				$("#sortable-list").sortable("disabled");
+				if(sortable) $("#sortable-list").sortable("disable");
 				$("#sortable-list").addClass("sorting-disabled");
 			}
 			
 			$("#form_result input.option_order").attr('disabled', 'disabled');
 			
 			data = {
-				'action'				: 'cat_ordered_changed',
-				'nwp_order_type'	: $("#form_result input.option_order:checked").val(),
-				'security'	: $('input[name=nwp_ordering_nonce]').val()
+				action				: 'network_wide_post_ordering',
+				nwp_order_type: $("#form_result input.option_order:checked").val(),
+				security			: $("input#nwp_ordering_nonce").val()
 			}
 			
 			$.post(ajaxurl, data, function (response){
@@ -63,6 +64,7 @@
 	});
 	
 	function enableSortable(){
+		sortable = true;
 		$("#sortable-list").removeClass("sorting-disabled");
 		$("#sortable-list").sortable(
 			{
@@ -71,9 +73,9 @@
 					$('#spinner-ajax-order').show();
 					
 					data = {
-						'action'					: 'network_wide_post_ordering',
-						'nwp_list_order'						: $(this).sortable('toArray').toString(),
-						'security'	: $('input[name=nwp_ordering_nonce]').val()
+						action				: 'network_wide_post_ordering',
+						nwp_list_order: $(this).sortable("toArray").toString(),
+						security			: $("input[name=nwp_ordering_nonce]").val()
 					}
 					$.post(ajaxurl, data, function (response){
 						//alert(response);

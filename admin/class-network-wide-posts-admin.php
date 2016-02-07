@@ -105,10 +105,10 @@ class Network_Wide_Posts_Admin {
 		//$screen = get_current_screen();
 		
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/network-wide-posts-admin.js', array( 'jquery' ), $this->version, false );
-		error_log("NWP: Addind sortable ... ".$hook_sufix."=".$this->plugin_name . '-order');
+		//error_log("NWP: Addind sortable ... ".$hook_sufix."=".$this->plugin_name . '-order');
 		if('posts_page_'.$this->plugin_name . '-order' == $hook_sufix){
 			wp_enqueue_script( 'jquery-ui-sortable');
-			error_log("NWP: Addind sortable jquery");
+			//error_log("NWP: Addind sortable jquery");
 		}
 
 	}
@@ -287,15 +287,15 @@ class Network_Wide_Posts_Admin {
 		$validName = false;
 		$validSlug = false;
 		
-		error_log("NWT: Validating options");
-		error_log("NWT: Inputs ".print_r($input,true));
+		//error_log("NWT: Validating options");
+		//error_log("NWT: Inputs ".print_r($input,true));
 		
 		if ( isset( $input['display-taxonomy'] ) ) {
 
 			$valid['display-taxonomy']	= $input['display-taxonomy'] ;
 			$validTax =true;
-			error_log("NWT: display-network-taxonomy: ".$valid['display-taxonomy']);
-		}else error_log("NWT: display-network-taxonomy not set");
+			//error_log("NWT: display-network-taxonomy: ".$valid['display-taxonomy']);
+		}//else error_log("NWT: display-network-taxonomy not set");
 
 		if ( isset( $input['term-name'] ) && isset( $input['term-slug'] ) ) {
 
