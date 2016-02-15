@@ -32,25 +32,42 @@
 	var sortable = false;
 	
 	$(document).ready(function() {
-		if($("#form_result input.option_order:checked").val() ==  "manual" && $("#sortable-list li").length >1) enableSortable();
+		
+		$('ul#tabs li h3 a').on('click', function(e)  {
+        var currentAttrValue = jQuery(this).attr('href');
+ 
+        // Show/Hide Tabs
+				$('ul.order-list').removeClass('active');
+        $('ul' + currentAttrValue).addClass('active');
+ 
+        // Change/remove current tab to active
+        $(this).closest('li').addClass('active').siblings().removeClass('active');
+ 
+        e.preventDefault();
+    });
+		
+		if($('#form_result input.option_order:checked').val() ==  'manual' ) enableSortable();
 		
 		// Au clic sur les boutons radio on enrehistre les prŽfŽrences //1,9,11,7,14
-		$("#form_result input.option_order").change(function (){
+		$('#form_result input.option_order').change(function (){
 			$('#spinner-ajax-radio').show();
 			
-			if($("#form_result input.option_order:checked").val() ==  "manual" && $("#sortable-list li").length >1){
-				enableSortable();
+			if($('#form_result input.option_order:checked').val() ==  'manual' ){
+				if(sortable){
+					$('ul.order-list').sortable('enable');
+					$("ul.order-list").removeClass("sorting-disabled");
+				}else enableSortable();
 			}else{
-				if(sortable) $("#sortable-list").sortable("disable");
-				$("#sortable-list").addClass("sorting-disabled");
+				if(sortable) $('ul.order-list').sortable('disable');
+				$('ul.order-list').addClass('sorting-disabled');
 			}
 			
 			$("#form_result input.option_order").attr('disabled', 'disabled');
 			
 			data = {
 				action				: 'network_wide_post_ordering',
-				nwp_order_type: $("#form_result input.option_order:checked").val(),
-				security			: $("input#nwp_ordering_nonce").val()
+				nwp_order_type: $('#form_result input.option_order:checked').val(),
+				security			: $('input#nwp_ordering_nonce').val()
 			}
 			
 			$.post(ajaxurl, data, function (response){
@@ -65,16 +82,20 @@
 	
 	function enableSortable(){
 		sortable = true;
-		$("#sortable-list").removeClass("sorting-disabled");
-		$("#sortable-list").sortable(
+		$("ul.order-list").removeClass("sorting-disabled");
+		$("ul.order-list").sortable(
 			{
 				 update: function( event, ui ) {
 					
 					$('#spinner-ajax-order').show();
-					
+					var ordered = [];
+					$("ul.order-list li").each(function(){
+						ordered.push($(this).attr('id'));
+					});
+					//$(this).sortable("toArray").toString()
 					data = {
 						action				: 'network_wide_post_ordering',
-						nwp_list_order: $(this).sortable("toArray").toString(),
+						nwp_list_order: ordered.toString(),
 						security			: $("input[name=nwp_ordering_nonce]").val()
 					}
 					$.post(ajaxurl, data, function (response){

@@ -54,27 +54,54 @@
         </label>
         <span class="spinner" id="spinner-ajax-radio"></span>
       </div>
+      
       <h3 class="floatLeft"><?php _e('Network-wide posts:', 'network-wide-posts');?></h3>
       <span id="spinner-ajax-order" class="spinner"></span>
+      <ul id="tabs">
+    <?php
+      foreach($languages as $lang => $language_name){
+      ?>
+          <li class="<?php echo ($default_lang == $lang) ? 'active' :''; ?>"><h3><a href="#sortable-list-<?php echo $lang; ?>"><?php echo $language_name; ?></a></h3></li>
+  <?php
+      }
+      ?>
+      </ul>
       <div class="clearBoth"></div>
       <ul class="headers"><li><span class="nwp-column">Post Title</span><span class="nwp-column">Site ID</span><span class="nwp-column">Post slug</span></li></ul>
-      <ul id="sortable-list" class="order-list <?php echo $list_class;?>" >
-    <?php
-      // On liste les posts du tableau $posts_array pour le trie
-      $alternate = 'alternate';
-      foreach ($posts as $post) {
+      
+  <?php
+      $new_language=true;
+      $idx=0;
+      while($idx< sizeof($posts)){
+        $alternate = 'alternate';
+        $post = $posts[$idx];
+        if($new_language){
+          $lang = $post->nwp_lang;
+          $new_language=false;
+        }
       ?>
-        <li id="post-<?php echo $post->nwp_id;?>" class="<?php echo $alternate?>">
-          <span class="title nwp-column"><?php echo $post->nwp_title;?></span>
-          <span class="blog-id nwp-column"><?php echo $post->blog_id;?></span>
-          <span class="slug nwp-column"><?php echo $post->nwp_name;?></span>
-          <span class="lang nwp-column"><?php echo $post->nwp_lang;?></span>
+      <ul id="sortable-list-<?php echo $lang; ?>" class="order-list <?php echo $list_class;?><?php echo ($default_lang == $lang) ? ' active' :''; ?>" >
+  <?php
+        do{
+    ?>
+            <li id="post-<?php echo $post->nwp_id;?>" class="<?php echo $alternate?>">
+              <span class="title nwp-column"><?php echo $post->nwp_title;?></span>
+              <span class="blog-id nwp-column"><?php echo $post->blog_id;?></span>
+              <span class="slug nwp-column"><?php echo $post->nwp_name;?></span>
+            </li>
+    <?php
+          if(empty($alternate)) $alternate = 'alternate';
+          else $alternate = '';
+          $idx++;
+          $post = $posts[$idx];
+          if($post->nwp_lang != $lang) $new_language = true;
+        }while(!$new_language && $idx < sizeof($posts));
+    ?>
+          </ul>
         </li>
     <?php
-        if(empty($alternate)) $alternate = 'alternate';
-        else $alternate = '';
       } ?>
-    
+        
       </ul>
     </div>
   </div>

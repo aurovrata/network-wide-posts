@@ -57,6 +57,7 @@ register_deactivation_hook( __FILE__, 'deactivate_network_wide_posts' );
  */
 require plugin_dir_path( __FILE__ ) . 'includes/class-network-wide-posts.php';
 
+
 /**
  * Begins execution of the plugin.
  *

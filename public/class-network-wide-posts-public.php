@@ -39,6 +39,12 @@ class Network_Wide_Posts_Public {
 	 * @var      string    $version    The current version of this plugin.
 	 */
 	private $version;
+	
+	static protected $nwp_order_type=null;
+	
+	static protected $nwp_manual_order=null;
+	
+	static protected $nwp_new_post_top=true;
 
 	/**
 	 * Initialize the class and set its properties.
@@ -51,7 +57,13 @@ class Network_Wide_Posts_Public {
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
-
+		
+		//let's load the options from the DB
+		if(is_null(self::$nwp_order_type))
+			self::$nwp_order_type = get_option(NWP_PLUGIN_NAME."-order-type",'time');
+		if(is_null(self::$nwp_order_type))
+			self::$nwp_manual_order = get_option(NWP_PLUGIN_NAME."-manual-order",array());
+		
 	}
 
 	/**
@@ -99,5 +111,61 @@ class Network_Wide_Posts_Public {
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/network-wide-posts-public.js', array( 'jquery' ), $this->version, false );
 
 	}
-
+	
+	/*
+	 * Function called by front-end hook init
+	 *
+	 */
+	public function load_api(){
+			/**
+			* The Plugin public api
+			*
+			*/
+		 require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/network-wide-posts-api.php';
+	}
+	/**
+	 * Function to retrieve the post from the view of network-wide posts.
+	 *
+	 * @since    1.0.0
+	 */
+	static public function get_network_wide_posts($args=''){
+		global $wpdb;
+		
+		$sql_query = "SELECT posts.nwp_id, posts.nwp_title, posts.nwp_name, posts.blog_id, posts.nwp_content, thumbs.nwp_thumb_url";
+		if(function_exists('pll_default_language')) $sql_query.=", posts.nwp_lang"; //usage of polylang
+    $sql_query.= "   FROM ". $wpdb->prefix . NWP_VIEW_POSTS_NAME . " as posts, " . $wpdb->prefix . NWP_VIEW_POSTS_NAME . "_thumbs as thumbs ";
+    $sql_query.= "    WHERE posts.nwp_thumb_id = thumbs.nwp_thumb_id";
+    $sql_query.= "     AND posts.blog_id = thumbs.blog_id ";
+				 
+		if(isset($args['lang']) && function_exists('pll_default_language') ){
+			$sql_query .= "AND posts.nwp_lang = '".$args['lang']."' ORDER BY ";
+		}else{
+			$sql_query .= "ORDER BY posts.nwp_lang, ";
+		}
+		
+		switch(self::$nwp_order_type){
+			case 'manual':
+				if(empty(self::$nwp_manual_order)){
+					$sql_query .= "nwp_date DESC";
+				}else{
+					if(self::$nwp_new_post_top)
+						$sql_query .= "FIELD(nwp_id, ". implode(",",self::$nwp_manual_order) . "), nwp_date DESC";
+					else
+						$sql_query .= "if(FIELD(nwp_id, ". implode(",",self::$nwp_manual_order) . ")=0,1,0), FIELD(nwp_id, ". implode(",",self::$nwp_manual_order) . "), nwp_date DESC";
+				}
+				break;
+			case 'slug':
+				$sql_query .= "nwp_name";
+				break;
+			case 'time':
+			default:
+				$sql_query .= "nwp_date DESC";
+				break;
+		}
+		
+		$posts = $wpdb->get_results($sql_query);
+		error_log("NWP: Found ".$wpdb->num_rows ." posts \n" . $wpdb->last_query);
+		if(!isset($posts)) return array();
+		return $posts;
+	}
 }

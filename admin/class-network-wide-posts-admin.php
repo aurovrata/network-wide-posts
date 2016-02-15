@@ -69,8 +69,28 @@ class Network_Wide_Posts_Admin {
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
 		$this->load_dependencies();
+	}
+	
+	/**
+	 * Initiliase the main class for handling network-wide terms
+	 *
+	 * This is called by a hook on 'plugins_loaded' so that we can detect correctly the dependent plugins.
+	 *
+	 * @since    1.0.0
+	 */
+	public function initialise_network_wide_terms(){
 		//create class for terms creation
-		$this->network_terms = new Network_Wide_Posts_Terms($plugin_name, $version);
+		if(isset($this->network_terms)) return;
+		switch(true){
+			case (class_exists('Polylang')):
+				$this->network_terms = new Network_Wide_Posts_Terms_Polylang($this->plugin_name, $this->version);
+				//error_log("NWP: Creating new NWP terms object for Polylang");
+				break;
+			default:
+				$this->network_terms = new Network_Wide_Posts_Terms_Default($this->plugin_name, $this->version);
+				//error_log("NWP: Creating new NWP terms object for Default");
+				break;
+		}
 	}
 
 	/**
@@ -102,15 +122,11 @@ class Network_Wide_Posts_Admin {
 	 * @since    1.0.0
 	 */
 	public function enqueue_scripts($hook_sufix) {
-		//$screen = get_current_screen();
-		
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/network-wide-posts-admin.js', array( 'jquery' ), $this->version, false );
-		//error_log("NWP: Addind sortable ... ".$hook_sufix."=".$this->plugin_name . '-order');
+		//we only need to load the js for the sortable list
 		if('posts_page_'.$this->plugin_name . '-order' == $hook_sufix){
 			wp_enqueue_script( 'jquery-ui-sortable');
-			//error_log("NWP: Addind sortable jquery");
+			wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/network-wide-posts-admin.js', array( 'jquery' ), $this->version, false );
 		}
-
 	}
 	
 	/**
@@ -130,7 +146,11 @@ class Network_Wide_Posts_Admin {
 		/**
 		 * The class responsible for Functionality for creating network-wide terms of the plugin.
 		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-network-wide-posts-terms-base.php';
+		//default implementation of the base abstract class
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-network-wide-posts-terms.php';
+		//functionality for polylang enabled sites
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-network-wide-posts-terms-polylang.php';
 	}
 
 	/**
@@ -173,7 +193,7 @@ class Network_Wide_Posts_Admin {
 	} // plugin_row_links()
 
 	public function add_new_blog( $blog_id, $user_id, $domain, $path, $site_id, $meta ){
-		$this->network_terms->create_blog_term($blog_id);
+		$this->network_terms->initialise_new_blog($blog_id);
 	}
 	/**
 	 * Adds a settings page link to a menu
@@ -441,29 +461,26 @@ class Network_Wide_Posts_Admin {
 	 * @return 		array 									In this case it is empty as we are changing the sub menu using the global $submenu.
 	 */
 	public function order_post_sub_menu($menu_ord ) {
+		$blog_id = get_current_blog_id();
+		if(1!=$blog_id) return;
+		
     global $submenu;
-
-    // Enable the next line to inspect the $submenu values
-    //error_log( "NWP: global menu \n". print_r($submenu,true));
-		//
 
     $arr = array();
 		$menu_order = array();
-    //$arr[] = $submenu['edit.php'][5]; //All Posts
 		foreach($submenu['edit.php'] as $order => $menu){
 			$menu_order[] = $order;
 			if(isset($menu[2]) && $this->plugin_name . '-order' == $menu[2]) $nwp_key = $order;
 		}
-		//error_log( "NWP: current order \n". print_r($menu_order,true));
-		//the index of our menu
+		
     $idx = array_search($nwp_key,$menu_order);
 		//remove our menu form the current order
 		array_splice($menu_order, $idx,1);
-		//error_log( "NWP: new order \n". print_r($menu_order,true));
+		
 		//insert our menu in the order we want.
 		if(self::POST_MENU_ORDER>0) array_splice($menu_order,self::POST_MENU_ORDER-1, 0, $nwp_key);
 		else array_splice($menu_order,sizeof($menu_order) - self::POST_MENU_ORDER+1, 0, $nwp_key);
-		//error_log( "NWP: new order \n". print_r($menu_order,true));
+		
 		//let's re-order the menus
 		foreach($menu_order as $order ){
 			$arr[] = $submenu['edit.php'][$order];
@@ -478,8 +495,17 @@ class Network_Wide_Posts_Admin {
 	 * @since 		1.0.0
 	 */
 	public function show_network_wide_posts(){
+		$showLanguages = false;
+		$languages = array();
 		$posts = $this->network_terms->get_network_wide_posts();
-		include( plugin_dir_path( __FILE__ ) . 'partials/network-wide-posts-admin-display.php');
+		if (class_exists('Polylang')){
+			$languages = $this->network_terms->get_languages();
+			$default_lang = $this->network_terms->get_default_language();
+			error_log("NWP: Languages (default:".$default_lang.") \n".print_r($languages,true));
+			include( plugin_dir_path( __FILE__ ) . 'partials/network-wide-posts-admin-polylang-display.php');
+		}else{
+			include( plugin_dir_path( __FILE__ ) . 'partials/network-wide-posts-admin-display.php');
+		}
 	}
 	
 	/**
