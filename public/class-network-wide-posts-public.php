@@ -131,11 +131,21 @@ class Network_Wide_Posts_Public {
 	static public function get_network_wide_posts($args=''){
 		global $wpdb;
 		
-		$sql_query = "SELECT posts.nwp_id, posts.nwp_title, posts.nwp_name, posts.blog_id, posts.nwp_content, thumbs.nwp_thumb_url";
+		$sql_query = "SELECT posts.nwp_id,
+												 posts.nwp_title,
+												 posts.nwp_name,
+												 posts.blog_id,
+												 posts.nwp_excerpt,
+												 thumbs.nwp_thumb_url,
+												 posts.nwp_thumb_id";
+												 
 		if(function_exists('pll_default_language')) $sql_query.=", posts.nwp_lang"; //usage of polylang
+		
     $sql_query.= "   FROM ". $wpdb->prefix . NWP_VIEW_POSTS_NAME . " as posts, " . $wpdb->prefix . NWP_VIEW_POSTS_NAME . "_thumbs as thumbs ";
-    $sql_query.= "    WHERE posts.nwp_thumb_id = thumbs.nwp_thumb_id";
-    $sql_query.= "     AND posts.blog_id = thumbs.blog_id ";
+    
+		$sql_query.= "    WHERE posts.nwp_thumb_id = thumbs.nwp_thumb_id";
+    
+		$sql_query.= "     AND posts.blog_id = thumbs.blog_id ";
 				 
 		if(isset($args['lang']) && function_exists('pll_default_language') ){
 			$sql_query .= "AND posts.nwp_lang = '".$args['lang']."' ORDER BY ";

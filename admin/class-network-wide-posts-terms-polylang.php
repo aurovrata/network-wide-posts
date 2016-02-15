@@ -126,9 +126,11 @@ class Network_Wide_Posts_Terms_Polylang extends Network_Wide_Posts_Terms{
 		$term_ids = array(); //term id storage array
 		
 		foreach($translations as $lang){
-			if($this->default_lang != $lang){
-				$term_slug = $this->term_slug . "-" . $lang;
-				$term_name = $this->term_name . " (". $lang .")";
+			$term_slug = $this->term_slug . "-" . $lang;
+			$term_name = $this->term_name . " (". $lang .")";
+			if($this->default_lang == $lang){
+				$term_slug = $this->term_slug;
+				$term_name = $this->term_name;	
 			}
 			$args = array(
 					'description'=>$term_description,
@@ -245,6 +247,7 @@ class Network_Wide_Posts_Terms_Polylang extends Network_Wide_Posts_Terms{
 							post_name AS nwp_name,
 							post_date AS nwp_date,
 							post_content AS nwp_content,
+							post_excerpt AS nwp_excerpt,
 							".$table_prefix."postmeta.meta_value as nwp_thumb_id,
 							'".$blog_id."' AS blog_id,
 							'". $lang ."' as nwp_lang
@@ -262,7 +265,7 @@ class Network_Wide_Posts_Terms_Polylang extends Network_Wide_Posts_Terms{
 	 */
 	public function get_network_wide_posts($args=''){
 		global $wpdb;
-		$sql_query = "SELECT posts.nwp_id, posts.nwp_title, posts.nwp_name, posts.blog_id, posts.nwp_content, posts.nwp_lang, thumbs.nwp_thumb_url 
+		$sql_query = "SELECT posts.nwp_id, posts.nwp_title, posts.nwp_name, posts.blog_id, posts.nwp_lang
        FROM ". $wpdb->prefix . NWP_VIEW_POSTS_NAME . " as posts, " . $wpdb->prefix . NWP_VIEW_POSTS_NAME . "_thumbs as thumbs 
         WHERE posts.nwp_thumb_id = thumbs.nwp_thumb_id
          AND posts.blog_id = thumbs.blog_id ";

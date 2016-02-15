@@ -34,12 +34,17 @@ function get_network_wide_posts($args=''){
     $post_id = $result->nwp_id;
     $post_id = substr( $post_id, strlen($blog_id));
     $permalink = get_permalink($post_id);
+		$thumb_url = $result->nwp_thumb_url;
+		if(isset($args['thumbnail'])){
+			$arr = wp_get_attachment_image_src($result->nwp_thumb_id,$args['thumbnail']);
+			$thumb_url = $arr[0];
+		}
     $posts[] = array(
       "post_id"=>$result->nwp_id,
       "post_title"=>$result->nwp_title,
-      "post_content"=>$result->nwp_content,
+			"post_excerpt"=>$result->nwp_excerpt,
       "post_url"=>$permalink,
-      "thumb_url"=>$result->nwp_thumb_url,
+      "thumb_url"=>$thumb_url,
       "blog_id"=>$result->blog_id
     );
   }

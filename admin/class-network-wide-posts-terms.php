@@ -153,6 +153,7 @@ class Network_Wide_Posts_Terms_Default extends Network_Wide_Posts_Terms {
 							post_name AS nwp_name,
 							post_date AS nwp_date,
 							post_content AS nwp_content,
+							post_excerpt AS nwp_excerpt,
 							".$table_prefix."postmeta.meta_value as nwp_thumb_id,
 							'".$blog_id."' AS blog_id
 						FROM ".$table_prefix."posts, ".$table_prefix."term_relationships, ".$table_prefix."postmeta
@@ -170,7 +171,7 @@ class Network_Wide_Posts_Terms_Default extends Network_Wide_Posts_Terms {
 	 */
 	public function get_network_wide_posts($args=''){
 		global $wpdb;
-		$sql_query = "SELECT posts.nwp_id, posts.nwp_title, posts.nwp_name, posts.nwp_id, posts.nwp_content, thumbs.nwp_thumb_url 
+		$sql_query = "SELECT posts.nwp_id, posts.nwp_title, posts.nwp_name, posts.blog_id 
        FROM ". $wpdb->prefix . NWP_VIEW_POSTS_NAME . " as posts, " . $wpdb->prefix . NWP_VIEW_POSTS_NAME . "_thumbs as thumbs 
         WHERE posts.nwp_thumb_id = thumbs.nwp_thumb_id
          AND posts.blog_id = thumbs.blog_id
