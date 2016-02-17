@@ -95,7 +95,7 @@
           $idx++;
           $post = $posts[$idx];
           if($post->nwp_lang != $lang) $new_language = true;
-        }while(!$new_language && $idx < sizeof($posts));
+        }while(!$new_language && $idx < (sizeof($posts)-1));
     ?>
           </ul>
         </li>

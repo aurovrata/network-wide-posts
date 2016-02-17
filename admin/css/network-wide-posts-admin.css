@@ -4,8 +4,9 @@
  */
 
 #result .nwp-column {
-    min-width: 30%;
+    width: 30%;
     display: inline-block;
+    vertical-align: top;
 }
 .headers .nwp-column {
     font-weight: bold;

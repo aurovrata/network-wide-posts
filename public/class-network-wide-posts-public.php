@@ -59,11 +59,15 @@ class Network_Wide_Posts_Public {
 		$this->version = $version;
 		
 		//let's load the options from the DB
+		self::set_order_settings();
+		
+	}
+	
+	static private function set_order_settings(){
 		if(is_null(self::$nwp_order_type))
 			self::$nwp_order_type = get_option(NWP_PLUGIN_NAME."-order-type",'time');
-		if(is_null(self::$nwp_order_type))
+		if(is_null(self::$nwp_manual_order))
 			self::$nwp_manual_order = get_option(NWP_PLUGIN_NAME."-manual-order",array());
-		
 	}
 
 	/**
@@ -130,7 +134,7 @@ class Network_Wide_Posts_Public {
 	 */
 	static public function get_network_wide_posts($args=''){
 		global $wpdb;
-		
+		self::set_order_settings();
 		$sql_query = "SELECT posts.nwp_id,
 												 posts.nwp_title,
 												 posts.nwp_name,

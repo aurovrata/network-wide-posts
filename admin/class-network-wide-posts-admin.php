@@ -461,8 +461,10 @@ class Network_Wide_Posts_Admin {
 	 * @return 		array 									In this case it is empty as we are changing the sub menu using the global $submenu.
 	 */
 	public function order_post_sub_menu($menu_ord ) {
+		if(is_network_admin()) return; //not applicable in this case
+		
 		$blog_id = get_current_blog_id();
-		if(1!=$blog_id) return;
+		if(1!=$blog_id) return;  // the menu only appears on the first site
 		
     global $submenu;
 
