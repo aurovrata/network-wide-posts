@@ -57,16 +57,17 @@
       <h3 class="floatLeft"><?php _e('Network-wide posts:', 'network-wide-posts');?></h3>
       <span id="spinner-ajax-order" class="spinner"></span>
       <div class="clearBoth"></div>
-      <ul class="headers"><li><span class="nwp-column">Post Title</span><span class="nwp-column">Site ID</span><span class="nwp-column">Post slug</span></li></ul>
+      <ul class="headers"><li><span class="nwp-column">Post Title</span><span class="nwp-column">Site</span><span class="nwp-column">Post slug</span></li></ul>
       <ul id="sortable-list" class="order-list <?php echo $list_class;?>" >
     <?php
       // On liste les posts du tableau $posts_array pour le trie
       $alternate = 'alternate';
+			$aliases = get_option($this->plugin_name . '-options-aliases');
       foreach ($posts as $post) {
       ?>
         <li id="post-<?php echo $post->nwp_id;?>" class="<?php echo $alternate?>">
           <span class="title nwp-column"><?php echo $post->nwp_title;?></span>
-          <span class="blog-id nwp-column"><?php echo $post->blog_id;?></span>
+          <span class="blog-id nwp-column"><?php echo $aliases['site-'.$post->blog_id];?></span>
           <span class="slug nwp-column"><?php echo $post->nwp_name;?></span>
           <span class="lang nwp-column"><?php echo $post->nwp_lang;?></span>
         </li>

@@ -141,12 +141,32 @@ abstract class Network_Wide_Posts_Terms {
     $this->plugin_name = $plugin_name;
 		$this->version = $version;
 		$this->term_type = self::AUTOMATIC_TAG;
-		$this->term_name = __("Network-wide","network-wide-posts");
-		$this->term_slug = "network-wide";
+    
+    //retrieve some options
+		$plugin_options = get_option( $this->plugin_name . '-options', array() );
+    if( isset($plugin_options['term-slug'] ) && isset($plugin_options['term-name'] )){
+      $this->term_name = $plugin_options['term-name'];
+      $this->term_slug = $plugin_options['term-slug'];
+    }else{
+      $this->term_name = __("Network-wide","network-wide-posts");
+      $this->term_slug = "network-wide";
+    }
+		 
 		//load the child blog terms if they exists
 		$this->blog_terms = get_option($this->plugin_name."-blog-term-id", array());
 		$this->nwp_manual_order = get_option($this->plugin_name."-manual-order",array());
 		$this->nwp_order_type = get_option($this->plugin_name."-order-type",'time');
+    
+    //initialise the blog aliases
+    $aliases = get_option( $this->plugin_name . '-options-aliases', array() );
+    if(empty($aliases)){
+      global $wpdb;
+  		$blogids = $wpdb->get_col("SELECT blog_id FROM $wpdb->blogs");
+      $aliases = array();
+			foreach ($blogids as $blog_id) $aliases['site-'.$blog_id] = 'blog('.$blog_id.')';
+      
+      update_options($this->plugin_name . '-options-aliases',$aliases);
+    }
   }
 	
 	/**
@@ -166,7 +186,7 @@ abstract class Network_Wide_Posts_Terms {
 			case ( self::AUTOMATIC_CAT === $network_tax ):
 				$this->term_name = current($terms);
 				$this->term_slug = key($terms);
-	
+        
 				// Get all blog ids
 				$blogids = $wpdb->get_col("SELECT blog_id FROM $wpdb->blogs");
 				foreach ($blogids as $blog_id) $this->create_blog_term($blog_id, $this->term_name, $this->term_slug , 'Network-wide -- DO NOT DELETE');

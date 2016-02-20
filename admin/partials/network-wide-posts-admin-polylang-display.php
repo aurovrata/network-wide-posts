@@ -67,11 +67,12 @@
       ?>
       </ul>
       <div class="clearBoth"></div>
-      <ul class="headers"><li><span class="nwp-column">Post Title</span><span class="nwp-column">Site ID</span><span class="nwp-column">Post slug</span></li></ul>
+      <ul class="headers"><li><span class="nwp-column">Post Title</span><span class="nwp-column">Site</span><span class="nwp-column">Post slug</span></li></ul>
       
   <?php
       $new_language=true;
       $idx=0;
+			$aliases = get_option($this->plugin_name . '-options-aliases');
       while($idx< sizeof($posts)){
         $alternate = 'alternate';
         $post = $posts[$idx];
@@ -86,7 +87,7 @@
     ?>
             <li id="post-<?php echo $post->nwp_id;?>" class="<?php echo $alternate?>">
               <span class="title nwp-column"><?php echo $post->nwp_title;?></span>
-              <span class="blog-id nwp-column"><?php echo $post->blog_id;?></span>
+              <span class="blog-id nwp-column"><?php echo $aliases['site-'.$post->blog_id];?></span>
               <span class="slug nwp-column"><?php echo $post->nwp_name;?></span>
             </li>
     <?php

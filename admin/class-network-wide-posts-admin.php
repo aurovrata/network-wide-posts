@@ -283,6 +283,36 @@ class Network_Wide_Posts_Admin {
 			$this->plugin_name,
 			$this->plugin_name . '_options' 
 		);
+		
+		/*
+		 *  Additional settings sections: Site Aliases
+		 */
+		// register_setting( $option_group, $option_name, $sanitize_callback );
+
+		register_setting(
+			$this->plugin_name . '-options',
+			$this->plugin_name . '-options-aliases',
+			array( $this, 'validate_options_aliases' )
+		);
+		
+		// add_settings_section( $id, $title, $callback, $menu_slug );
+
+		add_settings_section(
+			$this->plugin_name . '_options_alias' ,
+			 __( 'Alias your child sites', 'network-wide-posts' ) ,
+			array( $this, 'display_alias_section' ),
+			$this->plugin_name
+		);
+		
+		// add_settings_field( $id, $title, $callback, $menu_slug, $section, $args );
+
+		add_settings_field(
+			'display-sites-alias',
+			 __( 'Aliases', 'network-wide-posts' ) ,
+			array( $this, 'display_sites_alias_field' ),
+			$this->plugin_name,
+			$this->plugin_name . '_options_alias' 
+		);
 
 	} // register_settings()
 
@@ -302,8 +332,8 @@ class Network_Wide_Posts_Admin {
 		$validName = false;
 		$validSlug = false;
 		
-		//error_log("NWT: Validating options");
-		//error_log("NWT: Inputs ".print_r($input,true));
+		error_log("NWT: Validating options");
+		error_log("NWT: Inputs ".print_r($input,true));
 		
 		if ( isset( $input['display-taxonomy'] ) ) {
 
@@ -349,6 +379,18 @@ class Network_Wide_Posts_Admin {
 	} // validate_options()
 
 	/**
+	 * Validates saved aliases options
+	 *
+	 * @since 		1.0.0
+	 * @param 		array 		$input 			array of submitted plugin options
+	 * @return 		array 						array of validated plugin options
+	 */
+	public function validate_options_aliases( $input ) {
+		//there is nothing to validate here, its optional setting
+		return $input;
+
+	} // validate_options_aliases()
+	/**
 	 * Creates a settings section
 	 *
 	 * @since 		1.0.0
@@ -357,10 +399,28 @@ class Network_Wide_Posts_Admin {
 	 */
 	public function display_options_section( $params ) {
 
-		echo '<p>' . $params['title'] . '</p>';
+		echo '<p>';
+		_e("If you have an existing term you want to use, copy and paste the slug in the slug settings field, the plugin will automatically replicate it on the sites which does not have this term.","network-wide-posts");
+		echo '</br>';
+		_e("In a future version of this plugin, we will allow categories to be created/selected.","network-wide-posts");
+		echo '</p>';
 
 	} // display_options_section()
 
+	/**
+	 * Creates the alias settings section
+	 *
+	 * @since 		1.0.0
+	 * @param 		array 		$params 		Array of parameters for the section
+	 * @return 		mixed 						The settings section
+	 */
+	public function display_alias_section( $params ) {
+
+		echo '<p>';
+		_e("Setting up aliases for child sites are useful when manually ordering networ-wide posts.","network-wide-posts");
+		echo '</p>';
+
+	} // display_alias_section()
 	/**
 	 * Creates a settings field
 	 *
@@ -383,10 +443,36 @@ class Network_Wide_Posts_Admin {
 					name="<?php echo $this->plugin_name; ?>-options[display-taxonomy]"
 					value="<?php echo Network_Wide_Posts_Terms::AUTOMATIC_TAG; ?>"
 					checked="" <?php checked( Network_Wide_Posts_Terms::AUTOMATIC_TAG, $option, false ); ?> /> <?php _e("Create a tag automatically in each child site","network-wide-posts");?></br>
-		<p><?php _e("In a future version of this plugin, we will allow categories to be created/selected.","network-wide-posts");?></p>
 		<?php
 
 	} // display_taxonomy_selection_field()
+	
+	/**
+	 * Creates a settings field
+	 *
+	 * @since 		1.0.0
+	 * @return 		mixed 			The settings field
+	 */
+	public function display_sites_alias_field(){
+		global $wpdb;
+		
+		$options 	= get_option( $this->plugin_name . '-options-aliases' );
+		//error_log("NWP: options \n".print_r($options,true));
+		$blogs = $wpdb->get_results("SELECT blog_id, domain, path FROM $wpdb->blogs");
+		
+		foreach ($blogs as $blog){
+			$alias = 'blog('.$blog->blog_id.')';
+			if(isset($options['site-'.$blog->blog_id])) $alias = $options['site-'.$blog->blog_id];
+			?>
+		<input type="text" id="<?php echo $this->plugin_name; ?>-options-aliases[site-<?php echo $blog->blog_id;?>]"
+					name="<?php echo $this->plugin_name; ?>-options-aliases[site-<?php echo $blog->blog_id;?>]"
+					value="<?php echo $alias; ?>" />
+		<span><?php _e("Site","network-wide-posts");?>: <?php echo $blog->domain.$blog->path;?></span></br>
+		<?php
+			
+		}
+		
+	}
 
 	/**
 	 * Creates a settings field
@@ -403,10 +489,10 @@ class Network_Wide_Posts_Admin {
 
 			$option = $options['term-name'];
 
-		}else $option = __("Network-wide","network-wide-posts");
+		}else $option = $this->network_terms->get_term_name();
 
 		?>
-		<input type="text" id="<?php echo $this->plugin_name; ?>-options[term-name]" name="<?php echo $this->plugin_name; ?>-options[term-name]" value="<?php echo esc_attr( $option ); ?>">
+		<input type="text" id="<?php echo $this->plugin_name; ?>-options[term-name]" name="<?php echo $this->plugin_name; ?>-options[term-name]" value="<?php echo esc_attr( $option ); ?>"></br>
 		<?php
 
 	} // network_wide_term_name_field()
@@ -426,11 +512,10 @@ class Network_Wide_Posts_Admin {
 
 			$option = $options['term-slug'];
 
-		}else $option = 'network-wide';
+		}else $option = $this->network_terms->get_term_slug();
 
 		?>
-		<input type="text" id="<?php echo $this->plugin_name; ?>-options[term-slug]" name="<?php echo $this->plugin_name; ?>-options[term-slug]" value="<?php echo esc_attr( $option ); ?>">
-		<p><?php _e("If you have an existing term you want to use, copy and paste the slug here, the plugin will automatically replicate it on the sites which does not have this term","network-wide-posts");?></p>
+		<input type="text" id="<?php echo $this->plugin_name; ?>-options[term-slug]" name="<?php echo $this->plugin_name; ?>-options[term-slug]" value="<?php echo esc_attr( $option ); ?>"></br>
 		<?php
 
 	} // network_wide_term_slug_field()
@@ -443,9 +528,9 @@ class Network_Wide_Posts_Admin {
 	public function add_post_sub_menu(){
 		$blog_id = get_current_blog_id();
 		if(1!=$blog_id) return;
-		
+		$term_name = $this->network_terms->get_term_name();
 		//add_posts_page( $page_title, $menu_title, $capability, $menu_slug, $function) simple wrapper for add_submenu_page to post menu
-		add_posts_page('Order Network-wide Posts', 'Network Posts', 'manage_categories', $this->plugin_name . '-order', array($this,'show_network_wide_posts'));
+		add_posts_page('Order '. $term_name .' Posts', $term_name, 'manage_categories', $this->plugin_name . '-order', array($this,'show_network_wide_posts'));
 	}
 	
 	/**
