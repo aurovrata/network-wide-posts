@@ -165,7 +165,7 @@ abstract class Network_Wide_Posts_Terms {
       $aliases = array();
 			foreach ($blogids as $blog_id) $aliases['site-'.$blog_id] = 'blog('.$blog_id.')';
       
-      update_options($this->plugin_name . '-options-aliases',$aliases);
+      update_option($this->plugin_name . '-options-aliases',$aliases);
     }
   }
 	
