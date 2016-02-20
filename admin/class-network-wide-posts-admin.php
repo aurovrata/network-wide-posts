@@ -98,22 +98,17 @@ class Network_Wide_Posts_Admin {
 	 *
 	 * @since    1.0.0
 	 */
-	public function enqueue_styles() {
+	public function enqueue_styles($hook_sufix) {
 
 		/**
-		 * This function is provided for demonstration purposes only.
-		 *
-		 * An instance of this class should be passed to the run() function
-		 * defined in Network_Wide_Posts_Loader as all of the hooks are defined
-		 * in that particular class.
-		 *
-		 * The Network_Wide_Posts_Loader will then create the relationship
-		 * between the defined hooks and the functions defined in this
-		 * class.
+		 * Let's load the admin css only if the current page is part of our plugin.
+		 * We create plugin dashboard pages with the plugin name embeded.
 		 */
-
-		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/network-wide-posts-admin.css', array(), $this->version, 'all' );
-
+		
+		if(strstr($hook_sufix,$this->plugin_name)){
+			wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/network-wide-posts-admin.css', array(), $this->version, 'all' );
+			//error_log("NWT: CSS Enqueue ".$hook_sufix);
+		}
 	}
 
 	/**
