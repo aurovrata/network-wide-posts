@@ -161,10 +161,12 @@ abstract class Network_Wide_Posts_Terms {
     $aliases = get_option( $this->plugin_name . '-options-aliases', array() );
     if(empty($aliases)){
       global $wpdb;
-  		$blogids = $wpdb->get_col("SELECT blog_id FROM $wpdb->blogs");
-      $aliases = array();
-			foreach ($blogids as $blog_id) $aliases['site-'.$blog_id] = 'blog('.$blog_id.')';
-      
+  		$blogs = $wpdb->get_results("SELECT blog_id, domain, path FROM $wpdb->blogs");
+		  $aliases = array();
+      foreach ($blogs as $blog){
+        if ( defined( 'SUBDOMAIN_INSTALL' ) ) $aliases['site-'.$blog_id] = ucfirst( str_replace( "/" , "" , $blog->path ) );
+        else $aliases['site-'.$blog_id] = $blog->domain;
+      }
       update_option($this->plugin_name . '-options-aliases',$aliases);
     }
   }

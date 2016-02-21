@@ -457,7 +457,7 @@ class Network_Wide_Posts_Admin {
 		global $wpdb;
 		
 		$options 	= get_option( $this->plugin_name . '-options-aliases' );
-		//error_log("NWP: options \n".print_r($options,true));
+		//error_log("NWP: Aliases options \n".print_r($options, true));
 		$blogs = $wpdb->get_results("SELECT blog_id, domain, path FROM $wpdb->blogs");
 		
 		foreach ($blogs as $blog){

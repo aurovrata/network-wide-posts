@@ -86,8 +86,8 @@ class Network_Wide_Posts_Terms_Default extends Network_Wide_Posts_Terms {
 				break;
 		}
 		//switch back to current blog
-		switch_to_blog($current_blog_id); //back to where we started
-		
+		//switch_to_blog($current_blog_id); //back to where we started
+		restore_current_blog();
 		//let's build the necessary views for the network-side posts
 		$this->create_network_wide_posts_view();
 	}

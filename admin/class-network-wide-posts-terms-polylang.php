@@ -177,7 +177,8 @@ class Network_Wide_Posts_Terms_Polylang extends Network_Wide_Posts_Terms{
 			}
 		}
 		//switch back to current blog
-		switch_to_blog($current_blog_id); //back to where we started
+		//switch_to_blog($current_blog_id); //back to where we started
+		restore_current_blog();
 	}
 	/**
 	 * Function to create the DB view of network-wide posts.
