@@ -159,13 +159,14 @@ abstract class Network_Wide_Posts_Terms {
     
     //initialise the blog aliases
     $aliases = get_option( $this->plugin_name . '-options-aliases', array() );
+    //error_log("NWP: Aliases options \n".print_r($aliases, true));
     if(empty($aliases)){
       global $wpdb;
   		$blogs = $wpdb->get_results("SELECT blog_id, domain, path FROM $wpdb->blogs");
 		  $aliases = array();
       foreach ($blogs as $blog){
-        if ( defined( 'SUBDOMAIN_INSTALL' ) ) $aliases['site-'.$blog_id] = ucfirst( str_replace( "/" , "" , $blog->path ) );
-        else $aliases['site-'.$blog_id] = $blog->domain;
+        if ( defined( 'SUBDOMAIN_INSTALL' ) ) $aliases['site-'.$blog->blog_id] = ucfirst( str_replace( "/" , "" , $blog->path ) );
+        else $aliases['site-'.$blog->blog_id] = $blog->domain;
       }
       update_option($this->plugin_name . '-options-aliases',$aliases);
     }
