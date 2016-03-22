@@ -12,7 +12,15 @@ Enables child-site posts on a network to be displayed in the main site.
 
 == Description ==
 
-The plugin creates a network-wide tag in all post_tag taxonomy of each site.  Tagged posts are then loaded for access in a loop.
+This is a multisite plugin.
+
+The plugin creates a network-wide tag in all post_tag taxonomy of each site.  
+
+Tagged posts are made available for a theme developer to display on the home site.
+
+Furthermore, the home site admin dashboard has a new submenu Posts->Network Wide which allows the admin to manually order the network-wide posts with a drag and drop interface.
+
+This plugin was originally designed for a client site.  The site is a multi-resort group of hotels.  Each hotel has special offers through the season.  Each special offer is promoted on the home site.  Special offers need to be push up to the top of the page at various moments during the season.  This plugin allows them to do so.
 
 A few notes about the sections above:
 
