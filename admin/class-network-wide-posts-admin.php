@@ -186,7 +186,20 @@ class Network_Wide_Posts_Admin {
 		return $links;
 
 	} // plugin_row_links()
-
+	
+	/*
+	 *  Function called when a new blog is created.
+	 *
+	 *This function is hooked to 'wpmu_new_blog'
+	 *
+	 * @since 		1.0.0
+	 * @param 		int 		$blog_id 		blog id
+	 * @param 		int 		$user_id 		user id who created the blog
+	 * @param 		string 		$domain 	domain name
+	 * @param 		string 		$path 		path
+	 * @param 		int 		$site_id 		site id
+	 * @param 		array 		$meta 		array of additional site parameters
+	 */
 	public function add_new_blog( $blog_id, $user_id, $domain, $path, $site_id, $meta ){
 		$this->network_terms->initialise_new_blog($blog_id);
 	}
