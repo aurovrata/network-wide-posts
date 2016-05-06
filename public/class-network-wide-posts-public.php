@@ -39,11 +39,11 @@ class Network_Wide_Posts_Public {
 	 * @var      string    $version    The current version of this plugin.
 	 */
 	private $version;
-	
+
 	static protected $nwp_order_type=null;
-	
+
 	static protected $nwp_manual_order=null;
-	
+
 	static protected $nwp_new_post_top=true;
 
 	/**
@@ -57,12 +57,12 @@ class Network_Wide_Posts_Public {
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
-		
+
 		//let's load the options from the DB
 		self::set_order_settings();
-		
+
 	}
-	
+
 	static private function set_order_settings(){
 		if(is_null(self::$nwp_order_type))
 			self::$nwp_order_type = get_option(NWP_PLUGIN_NAME."-order-type",'time');
@@ -115,7 +115,7 @@ class Network_Wide_Posts_Public {
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/network-wide-posts-public.js', array( 'jquery' ), $this->version, false );
 
 	}
-	
+
 	/*
 	 * Function called by front-end hook init
 	 *
@@ -136,27 +136,26 @@ class Network_Wide_Posts_Public {
 		global $wpdb;
 		self::set_order_settings();
 		$sql_query = "SELECT posts.nwp_id,
-												 posts.nwp_title,
-												 posts.nwp_name,
-												 posts.blog_id,
-												 posts.nwp_excerpt,
-												 thumbs.nwp_thumb_url,
-												 posts.nwp_thumb_id";
-												 
-		if(function_exists('pll_default_language')) $sql_query.=", posts.nwp_lang"; //usage of polylang
-		
-    $sql_query.= "   FROM ". $wpdb->prefix . NWP_VIEW_POSTS_NAME . " as posts, " . $wpdb->prefix . NWP_VIEW_POSTS_NAME . "_thumbs as thumbs ";
-    
-		$sql_query.= "    WHERE posts.nwp_thumb_id = thumbs.nwp_thumb_id";
-    
-		$sql_query.= "     AND posts.blog_id = thumbs.blog_id ";
-				 
+			posts.nwp_title,
+			posts.nwp_name,
+			posts.blog_id,
+			posts.nwp_excerpt,
+			if(isnull(thumbs.nwp_thumb_url),'', thumbs.nwp_thumb_url) as nwp_thumb_url,
+			posts.nwp_thumb_id";
+
+		if(function_exists('pll_default_language')) $sql_query.=", posts.nwp_lang "; //usage of polylang
+
+    $sql_query.= "   FROM ". $wpdb->prefix . NWP_VIEW_POSTS_NAME . " as posts ";
+
+		$sql_query.= "    LEFT JOIN  " . $wpdb->prefix . NWP_VIEW_POSTS_NAME . "_thumbs as thumbs ON posts.nwp_thumb_id = thumbs.nwp_thumb_id
+												AND posts.blog_id = thumbs.blog_id ";
+
 		if(isset($args['lang']) && function_exists('pll_default_language') ){
-			$sql_query .= "AND posts.nwp_lang = '".$args['lang']."' ORDER BY ";
+			$sql_query .= "WHERE posts.nwp_lang = '".$args['lang']."' ORDER BY ";
 		}else{
-			$sql_query .= "ORDER BY posts.nwp_lang, ";
+			$sql_query .= "ORDER BY  ";
 		}
-		
+
 		switch(self::$nwp_order_type){
 			case 'manual':
 				if(empty(self::$nwp_manual_order)){
@@ -176,9 +175,9 @@ class Network_Wide_Posts_Public {
 				$sql_query .= "nwp_date DESC";
 				break;
 		}
-		
+
 		$posts = $wpdb->get_results($sql_query);
-		error_log("NWP: Found ".$wpdb->num_rows ." posts \n" . $wpdb->last_query);
+		//error_log("NWP: Found ".$wpdb->num_rows ." posts \n" . $wpdb->last_query);
 		if(!isset($posts)) return array();
 		return $posts;
 	}
