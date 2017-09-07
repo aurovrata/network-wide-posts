@@ -69,18 +69,18 @@ class Network_Wide_Posts {
 	public function __construct() {
 
 		$this->define_constants();
-		
+
 		$this->load_dependencies();
 		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
-		
+
 
 	}
-	
+
 	private function define_constants(){
 		$this->plugin_name = 'network-wide-posts';
-		$this->version = '1.0.0';
+		$this->version = '1.1.1';
 		//views used for the DB
 		if (!defined('NWP_VIEW_POSTS_NAME'))
 			define('NWP_VIEW_POSTS_NAME', 'network_wide_posts');
@@ -122,7 +122,7 @@ class Network_Wide_Posts {
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-network-wide-posts-admin.php';
-		
+
 		/**
 		 * The class responsible for defining all actions that occur in the public-facing
 		 * side of the site.
@@ -163,17 +163,18 @@ class Network_Wide_Posts {
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
-		
+
 		//custom hooks
-		$this->loader->add_action( 'plugins_loaded', 				$plugin_admin, 	'initialise_network_wide_terms'); //detect dependent plugins
+		$this->loader->add_action( 'plugins_loaded', 		$plugin_admin, 	'initialise_network_wide_terms'); //detect dependent plugins
+		$this->loader->add_action( 'admin_init', 				$plugin_admin, 	'initialise_network_wide_terms'); //detect dependent plugins
 		$this->loader->add_action( 'admin_menu', 				$plugin_admin, 	'add_menu' ); //settings page
 		$this->loader->add_action( 'admin_menu', 				$plugin_admin, 'add_post_sub_menu'); //post sub-menu
 		$this->loader->add_action( 'custom_menu_order',	$plugin_admin, 'order_post_sub_menu'); //order post sub-menu
 
 		$this->loader->add_action( 'admin_init', 				$plugin_admin, 	'register_settings' );
-		
+
 		$this->loader->add_action( 'wpmu_new_blog',     $plugin_admin,'add_new_blog');
-		
+
 		$this->loader->add_action( 'wp_ajax_network_wide_post_ordering',$plugin_admin,'network_wide_post_ordering'); //ajax save manual order
 
 	}
