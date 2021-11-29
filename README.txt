@@ -3,7 +3,7 @@ Contributors: aurovrata
 Donate link: https://www.paypal.com/us/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=PAENZZXUMUKSG
 Tags: multisite, network, network-wide taxonomy, posts, manual order, polylang, multilingual, multi language
 Requires at least: 3.5
-Tested up to: 4.7.3
+Tested up to: 5.8.2
 Stable tag: trunk
 Network: true
 License: GPLv2 or later
